@@ -1,0 +1,3 @@
+@tailwind base;      ← resets default browser styles
+@tailwind components; ← allows tailwind component classes
+@tailwind utilities;  ← enables all the classes like bg-blue-500, p-4, etc
