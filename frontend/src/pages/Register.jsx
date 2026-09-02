@@ -1,58 +1,66 @@
 import { useState } from 'react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate, Link } from 'react-router-dom';
+
+const interests = ['Music', 'Gardening', 'Reading', 'Walking', 'Cooking', 'Arts & Crafts', 'Sports', 'Movies', 'Board Games', 'History', 'Nature'];
 
 export default function Register() {
-  const [form, setForm] = useState({ username: '', email: '', password: '' });
+  const { role: routeRole } = useParams();
+  const [form, setForm] = useState({ email: '', password: '', full_name: '', phone: '', location: '', bio: '', role: routeRole === 'volunteer' ? 'volunteer' : 'client', registrant_type: 'self', pvg_number: '', interests: [] });
   const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
   const { register } = useAuth();
   const nav = useNavigate();
 
-  const handleSubmit = async e => {
-    e.preventDefault();
+  const toggleInterest = name => setForm(value => ({ ...value, interests: value.interests.includes(name) ? value.interests.filter(item => item !== name) : [...value.interests, name] }));
+
+  const handleSubmit = async event => {
+    event.preventDefault();
+    setBusy(true);
+    setError('');
     try {
-      await register(form.username, form.email, form.password);
+      await register(form);
       nav('/dashboard');
-    } catch {
-      setError('Registration failed. Username may already exist.');
+    } catch (err) {
+      const data = err.response?.data;
+      setError(data ? Object.values(data).flat().join(' ') : 'Registration failed. Please check your details.');
+    } finally {
+      setBusy(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-8 rounded-xl shadow-md w-96">
-        <h1 className="text-2xl font-bold mb-6 text-center">Create Account</h1>
-        {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
-        <div className="space-y-4">
-          <input
-            className="w-full border rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Username"
-            onChange={e => setForm({...form, username: e.target.value})}
-          />
-          <input
-            className="w-full border rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            type="email"
-            placeholder="Email"
-            onChange={e => setForm({...form, email: e.target.value})}
-          />
-          <input
-            className="w-full border rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            type="password"
-            placeholder="Password"
-            onChange={e => setForm({...form, password: e.target.value})}
-          />
-          <button
-            onClick={handleSubmit}
-            className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 font-medium"
-          >
-            Register
-          </button>
+    <main className="min-h-screen bg-slate-50 px-5 py-10">
+      <form onSubmit={handleSubmit} className="mx-auto max-w-2xl rounded-3xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
+        <Link to="/" className="text-sm font-semibold text-indigo-700">← Back to Shallion</Link>
+        <h1 className="mt-5 text-3xl font-bold text-slate-900">Create your account</h1>
+        <p className="mt-2 text-slate-600">Choose how you will use Shallion and complete your profile.</p>
+        {error && <div className="mt-5 rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</div>}
+
+        <div className="mt-7 grid gap-4 sm:grid-cols-2">
+          <label className="text-sm font-medium text-slate-700">I am joining as
+            <select value={form.role} onChange={e => setForm({...form, role: e.target.value})} className="mt-1 w-full rounded-xl border p-3">
+              <option value="client">A client or carer</option><option value="volunteer">A volunteer</option>
+            </select>
+          </label>
+          <label className="text-sm font-medium text-slate-700">Full name<input required value={form.full_name} onChange={e => setForm({...form, full_name: e.target.value})} className="mt-1 w-full rounded-xl border p-3" /></label>
+          <label className="text-sm font-medium text-slate-700">Email<input required type="email" value={form.email} onChange={e => setForm({...form, email: e.target.value})} className="mt-1 w-full rounded-xl border p-3" /></label>
+          <label className="text-sm font-medium text-slate-700">Password<input required minLength="8" type="password" value={form.password} onChange={e => setForm({...form, password: e.target.value})} className="mt-1 w-full rounded-xl border p-3" /></label>
+          <label className="text-sm font-medium text-slate-700">Phone<input value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} className="mt-1 w-full rounded-xl border p-3" /></label>
+          <label className="text-sm font-medium text-slate-700">Location<input value={form.location} onChange={e => setForm({...form, location: e.target.value})} className="mt-1 w-full rounded-xl border p-3" /></label>
+          {form.role === 'client' ? (
+            <label className="text-sm font-medium text-slate-700">Registering for
+              <select value={form.registrant_type} onChange={e => setForm({...form, registrant_type: e.target.value})} className="mt-1 w-full rounded-xl border p-3"><option value="self">Myself</option><option value="carer">A family member</option></select>
+            </label>
+          ) : (
+            <label className="text-sm font-medium text-slate-700">PVG number (optional)<input value={form.pvg_number} onChange={e => setForm({...form, pvg_number: e.target.value})} className="mt-1 w-full rounded-xl border p-3" /></label>
+          )}
         </div>
-        <p className="text-center text-sm mt-4 text-gray-600">
-          Already have an account?{' '}
-          <Link to="/login" className="text-blue-600 hover:underline">Sign In</Link>
-        </p>
-      </div>
-    </div>
+        <label className="mt-4 block text-sm font-medium text-slate-700">Short introduction<textarea value={form.bio} onChange={e => setForm({...form, bio: e.target.value})} rows="3" className="mt-1 w-full rounded-xl border p-3" /></label>
+        <fieldset className="mt-6"><legend className="text-sm font-semibold text-slate-800">Interests</legend><div className="mt-3 flex flex-wrap gap-2">{interests.map(name => <button type="button" key={name} onClick={() => toggleInterest(name)} className={`rounded-full px-3 py-2 text-sm ${form.interests.includes(name) ? 'bg-indigo-700 text-white' : 'bg-slate-100 text-slate-700'}`}>{name}</button>)}</div></fieldset>
+        <button disabled={busy} className="mt-8 w-full rounded-xl bg-indigo-700 py-3 font-semibold text-white disabled:opacity-60">{busy ? 'Creating account…' : 'Create account'}</button>
+        <p className="mt-4 text-center text-sm text-slate-600">Already registered? <Link to="/login" className="font-semibold text-indigo-700">Sign in</Link></p>
+      </form>
+    </main>
   );
 }

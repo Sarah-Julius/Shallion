@@ -4,7 +4,7 @@ import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import api from '../api/axios';
 
-const stripePromise = loadStripe('pk_test_YOUR_STRIPE_PUBLIC_KEY');
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY || '');
 
 function CheckoutForm() {
   const stripe = useStripe();
@@ -16,7 +16,7 @@ function CheckoutForm() {
     e.preventDefault();
     setLoading(true);
     try {
-      const { data } = await api.post('/payments/create-intent/', { amount: 2000 });
+      const { data } = await api.post('/payments/create-intent/');
       const result = await stripe.confirmCardPayment(data.clientSecret, {
         payment_method: { card: elements.getElement(CardElement) }
       });
@@ -68,9 +68,11 @@ export default function Payment() {
           <p className="text-sm text-gray-600">Amount to pay</p>
           <p className="text-2xl font-bold text-blue-600">$20.00</p>
         </div>
-        <Elements stripe={stripePromise}>
-          <CheckoutForm />
-        </Elements>
+        {import.meta.env.VITE_STRIPE_PUBLIC_KEY ? (
+          <Elements stripe={stripePromise}><CheckoutForm /></Elements>
+        ) : (
+          <p className="rounded-lg bg-amber-50 p-4 text-sm text-amber-800">Payments are disabled until a Stripe public key is configured.</p>
+        )}
       </div>
     </div>
   );
