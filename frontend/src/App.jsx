@@ -3,7 +3,6 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import ClientRegister from './pages/ClientRegister';
 import Dashboard from './pages/Dashboard';
 import Payment from './pages/Payment';
 
@@ -19,7 +18,7 @@ function AppRoutes() {
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
-      <Route path="/register/client" element={<ClientRegister />} />
+      <Route path="/register/:role" element={<Register />} />
       <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
       <Route path="/payment" element={<PrivateRoute><Payment /></PrivateRoute>} />
       <Route path="*" element={<Navigate to="/" />} />

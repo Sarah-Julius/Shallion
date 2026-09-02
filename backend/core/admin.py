@@ -5,7 +5,7 @@ from django.contrib import admin
 from .models import (
     UserProfile, Interest, UserInterest,
     Availability, ServiceRequest, Application,
-    Message, Booking, Review
+    Message, Booking, Review, Payment
 )
 
 admin.site.register(UserProfile)
@@ -17,3 +17,4 @@ admin.site.register(Application)
 admin.site.register(Message)
 admin.site.register(Booking)
 admin.site.register(Review)
+admin.site.register(Payment)

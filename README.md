@@ -2,7 +2,7 @@
 
 A community-support platform designed to connect people living with dementia and their carers with suitable local volunteers.
 
-> **Project status:** Active prototype. Authentication, client onboarding, data models, payment-intent support, and the initial dashboard are implemented. Volunteer onboarding, matching workflows, production deployment, and comprehensive tests are still in development.
+> **Project status:** Portfolio-ready full-stack release. The core client-to-volunteer journey, payments integration, automated tests and production deployment configuration are implemented.
 
 ## Overview
 
@@ -10,13 +10,18 @@ Shallion explores how a secure digital service can make community support easier
 
 ## Key features
 
-- Client and carer registration with a three-step onboarding flow
+- Complete client and volunteer role-based registration
 - JWT-based registration, login, and protected routes
 - Role-based client and volunteer data model
 - Support requests, volunteer applications, bookings, messages, and reviews
 - Interest and availability records to support future matching
 - GP certificate and profile document fields
 - Stripe PaymentIntent integration scaffold
+- Verified-volunteer matching based on shared interests
+- Volunteer applications with client acceptance and automatic booking creation
+- Booking status management and matched-user messaging
+- Reviews for completed bookings
+- Stripe PaymentIntents, signed webhooks and payment history
 - Responsive React interface styled with Tailwind CSS
 - Django administration interface for managing platform records
 
@@ -27,7 +32,7 @@ Shallion explores how a secure digital service can make community support easier
 | Frontend | React, Vite, React Router, Axios, Tailwind CSS |
 | Backend | Python, Django, Django REST Framework |
 | Authentication | Simple JWT |
-| Data | SQLite for local development; Django ORM |
+| Data | SQLite locally, PostgreSQL in production, Django ORM |
 | Payments | Stripe |
 | Tooling | ESLint, npm, Git, GitHub |
 
@@ -106,7 +111,15 @@ The frontend will be available at `http://localhost:5173/`.
 | `POST /api/auth/login/` | Obtain JWT access and refresh tokens |
 | `POST /api/auth/refresh/` | Refresh an access token |
 | `GET /api/auth/me/` | Return the authenticated user |
-| `POST /api/payments/create-intent/` | Create a Stripe PaymentIntent |
+| `GET/POST /api/requests/` | Manage support requests |
+| `GET/POST /api/applications/` | Manage volunteer applications |
+| `POST /api/applications/:id/accept/` | Accept a volunteer and create a booking |
+| `GET/PATCH /api/bookings/` | View and update bookings |
+| `GET/POST /api/messages/` | Message matched users |
+| `GET/POST /api/reviews/` | Review completed bookings |
+| `GET /api/matches/` | View ranked verified volunteers |
+| `POST /api/payments/create-intent/` | Create a server-priced Stripe PaymentIntent |
+| `POST /api/payments/webhook/` | Process signed Stripe payment events |
 
 ## Quality checks
 
@@ -120,16 +133,17 @@ npm run lint
 npm run build
 ```
 
-## Current limitations and roadmap
+## Production deployment
 
-- Complete the volunteer registration route and onboarding workflow
-- Persist the complete client profile, interests, services, and uploaded certificate
-- Build volunteer-to-client matching and search
-- Add booking, messaging, review, and notification interfaces
-- Move payment amount and currency rules to trusted server-side configuration
-- Add API validation, permissions, error handling, and automated test coverage
-- Configure production database, media storage, security settings, and deployment
-- Add real application screenshots and a live demonstration link
+The repository includes a Render Blueprint in `render.yaml`. It provisions a PostgreSQL database, Django API service and React static service. Before launching, configure the Stripe secret key, webhook secret and frontend public key in Render, then register the deployed webhook URL in Stripe.
+
+## Future enhancements
+
+- Email and in-app notifications
+- Durable cloud object storage for verification uploads
+- Background checks and safeguarding workflow integrations
+- Calendar reminders and recurring bookings
+- Expanded accessibility and end-to-end browser testing
 
 ## Privacy and safeguarding
 

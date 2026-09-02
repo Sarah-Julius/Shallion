@@ -1,7 +1,4 @@
 from django.db import models
-
-# Create your models here.
-from django.db import models
 from django.contrib.auth.models import User
 
 class UserProfile(models.Model):
@@ -33,7 +30,7 @@ class UserProfile(models.Model):
 
 
 class Interest(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, unique=True)
 
     def __str__(self):
         return self.name
@@ -110,6 +107,11 @@ class Application(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     applied_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=('request', 'volunteer'), name='unique_volunteer_application')
+        ]
+
     def __str__(self):
         return f"{self.volunteer.full_name} → {self.request}"
 
@@ -151,3 +153,18 @@ class Review(models.Model):
 
     def __str__(self):
         return f"{self.reviewer.full_name} → {self.reviewee.full_name}: {self.rating}★"
+
+
+class Payment(models.Model):
+    STATUS_CHOICES = [('pending', 'Pending'), ('succeeded', 'Succeeded'), ('failed', 'Failed'), ('refunded', 'Refunded')]
+
+    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='payments')
+    stripe_payment_intent_id = models.CharField(max_length=255, unique=True)
+    amount = models.PositiveIntegerField(help_text='Amount in the smallest currency unit')
+    currency = models.CharField(max_length=3, default='gbp')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.user.full_name} - {self.amount} {self.currency.upper()} ({self.status})"
